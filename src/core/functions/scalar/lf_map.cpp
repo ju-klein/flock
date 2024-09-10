@@ -10,26 +10,24 @@
 namespace large_flock {
 namespace core {
 
-inline std::string ConstructPrompt(DataChunk &args, const nlohmann::json &args_idx) {
+inline std::string ConstructPrompt(DataChunk &args, Connection &con) {
     inja::Environment env;
 
-    // get the template string
-    auto template_str = args.data[args_idx["template"]].GetValue(0).ToString();
+    auto prompt_name = args.data[0].GetValue(0).ToString();
+
+    auto query_result = con.Query(
+        "SELECT prompt FROM lf_config.LARGE_FLOCK_PROMPT_INTERNAL_TABLE WHERE prompt_name = '" + prompt_name + "'");
+
+    if (query_result->RowCount() == 0) {
+        throw std::runtime_error("Prompt not found");
+    }
+
+    auto template_str = query_result->GetValue(0, 0).ToString();
 
     std::string filled_template = "";
+    auto params = CoreScalarParsers::Struct2Json(args.data[2], args.size());
     for (idx_t i = 0; i < args.size(); i++) {
-        nlohmann::json *params = new nlohmann::json;
-
-        // get the inputs from the args and store in the params
-        for (const auto &el : args_idx["inputs"].items()) {
-            std::string key = el.key();
-            idx_t idx = el.value();
-            (*params)[key] = args.data[idx].GetValue(i).ToString();
-        }
-
-        // render the template string with the params
-        filled_template += "Prompt " + std::to_string(i + 1) + ": " + env.render(template_str, (*params)) + "\n\n";
-        delete params;
+        filled_template += "Prompt " + std::to_string(i + 1) + ": " + env.render(template_str, params[i]) + "\n\n";
     }
 
     std::string prompt = env.render_file("src/templates/lf_map/prompt_template.txt", {{"prompts", filled_template}});
@@ -39,17 +37,23 @@ inline std::string ConstructPrompt(DataChunk &args, const nlohmann::json &args_i
 
 static void LfMapScalarFunction(DataChunk &args, ExpressionState &state, Vector &result) {
     // parse the arguments and return the args key idx pair
-    auto key_idx_pair = CoreScalarParsers::LfMapScalarParser(args);
-    auto prompt = ConstructPrompt(args, key_idx_pair);
+    Connection con(*state.GetContext().db);
+    CoreScalarParsers::LfMapScalarParser(args);
+    auto model = args.data[1].GetValue(0).ToString();
+    auto prompt = ConstructPrompt(args, con);
+    nlohmann::json settings;
+    if (args.ColumnCount() == 4) {
+        settings = CoreScalarParsers::Struct2Json(args.data[3], args.size())[0];
+    }
 
-    // Get the model name, max tokens and temperature
-    auto model_name = args.data[key_idx_pair["model"]].GetValue(0).ToString();
-    auto max_tokens =
-        key_idx_pair["max_tokens"] != -1 ? args.data[key_idx_pair["max_tokens"]].GetValue(0).GetValue<int>() : 100;
-    auto temperature =
-        key_idx_pair["temperature"] != -1 ? args.data[key_idx_pair["temperature"]].GetValue(0).GetValue<float>() : 1.0;
+    auto query_result =
+        con.Query("SELECT model FROM lf_config.LARGE_FLOCK_MODEL_INTERNAL_TABLE WHERE model_name = '" + model + "'");
+    if (query_result->RowCount() == 0) {
+        throw std::runtime_error("Model not found");
+    }
+    auto model_name = query_result->GetValue(0, 0).ToString();
 
-    std::string llm_response = ModelManager::CallComplete(prompt, model_name, max_tokens, temperature);
+    std::string llm_response = ModelManager::CallComplete(prompt, model_name, settings);
 
     // parse the llm response
     std::vector<std::string> response_list = CoreLlmResponseParsers::LfMapResponseParser(llm_response, args.size());
