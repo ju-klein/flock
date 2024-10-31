@@ -4,6 +4,9 @@
 #include <flockmtl/core/parser/llm_response.hpp>
 #include <flockmtl/core/parser/scalar.hpp>
 #include <flockmtl_extension.hpp>
+#include <string>
+#include <nlohmann/json.hpp>
+
 
 namespace flockmtl {
 namespace core {
@@ -12,17 +15,9 @@ static void LlmEmbeddingScalarFunction(DataChunk &args, ExpressionState &state, 
     Connection con(*state.GetContext().db);
     CoreScalarParsers::LlmEmbeddingScalarParser(args);
 
-    auto model = args.data[1].GetValue(0).ToString();
-    auto query_result =
-        con.Query("SELECT model, max_tokens FROM flockmtl_config.FLOCKMTL_MODEL_INTERNAL_TABLE WHERE model_name = '" +
-                  model + "'");
-
-    if (query_result->RowCount() == 0) {
-        throw std::runtime_error("Model not found");
-    }
-
-    auto model_name = query_result->GetValue(0, 0).ToString();
     auto inputs = CoreScalarParsers::Struct2Json(args.data[0], args.size());
+    auto model_details_json = CoreScalarParsers::Struct2Json(args.data[1], 1)[0];
+    auto model_details = ModelManager::CreateModelDetails(con, model_details_json);
 
     auto embeddings = nlohmann::json::array();
     for (auto &row : inputs) {
@@ -30,7 +25,8 @@ static void LlmEmbeddingScalarFunction(DataChunk &args, ExpressionState &state, 
         for (auto &item : row.items()) {
             concat_input += item.value().get<std::string>() + " ";
         }
-        auto element_embedding = ModelManager::CallEmbedding(concat_input, model_name);
+
+        auto element_embedding = ModelManager::CallEmbedding(concat_input, model_details);
         embeddings.push_back(element_embedding);
     }
 

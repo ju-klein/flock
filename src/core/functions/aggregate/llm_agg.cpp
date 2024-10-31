@@ -3,6 +3,8 @@
 #include "flockmtl/core/module.hpp"
 #include "flockmtl/core/model_manager/model_manager.hpp"
 #include "flockmtl/core/model_manager/tiktoken.hpp"
+#include <flockmtl/core/config/config.hpp>
+#include <vector>
 
 namespace flockmtl {
 namespace core {
@@ -15,13 +17,13 @@ void LlmAggState::Update(const nlohmann::json &input) {
 }
 
 void LlmAggState::Combine(const LlmAggState &source) {
-    for (auto &value: source.value){
-        Update(std::move(source.value));
+    for (auto &input : source.value) {
+        Update(std::move(input));
     }
 }
 
 LlmFirstOrLast::LlmFirstOrLast(std::string &model, int model_context_size, std::string &search_query,
-                         std::string &llm_first_or_last_template)
+                               std::string &llm_first_or_last_template)
     : model(model), model_context_size(model_context_size), search_query(search_query),
       llm_first_or_last_template(llm_first_or_last_template) {
 
@@ -41,16 +43,15 @@ int LlmFirstOrLast::calculateFixedTokens() const {
     return num_tokens_meta_and_search_query;
 }
 
-nlohmann::json LlmFirstOrLast::GetFirstOrLastTupleId(const nlohmann::json &tuples) {
+int LlmFirstOrLast::GetFirstOrLastTupleId(const nlohmann::json &tuples) {
     inja::Environment env;
     nlohmann::json data;
     data["tuples"] = tuples;
     data["search_query"] = search_query;
     auto prompt = env.render(llm_first_or_last_template, data);
 
-    nlohmann::json settings;
-    auto response = ModelManager::CallComplete(prompt, model, settings);
-    return response["selected"];
+    auto response = ModelManager::CallComplete(prompt, LlmAggOperation::model_details);
+    return response["selected"].get<int>();
 }
 
 nlohmann::json LlmFirstOrLast::Evaluate(nlohmann::json &tuples) {
@@ -93,10 +94,9 @@ nlohmann::json LlmFirstOrLast::Evaluate(nlohmann::json &tuples) {
                 batch.push_back(tuples[j]);
             }
 
-            auto ranked_indices = GetFirstOrLastTupleId(batch);
-            responses.push_back(batch[ranked_indices.get<int>()]);
+            auto result_idx = GetFirstOrLastTupleId(batch);
+            responses.push_back(batch[result_idx]);
         }
-
         tuples = responses;
     };
 
@@ -104,10 +104,10 @@ nlohmann::json LlmFirstOrLast::Evaluate(nlohmann::json &tuples) {
 }
 
 // Static member initialization
-std::string LlmAggOperation::model_name;
+ModelDetails LlmAggOperation::model_details {};
 std::string LlmAggOperation::search_query;
-std::unordered_map<void *, std::shared_ptr<LlmAggState>> LlmAggOperation::state_map;
 
+std::unordered_map<void *, std::shared_ptr<LlmAggState>> LlmAggOperation::state_map;
 
 void LlmAggOperation::Initialize(const AggregateFunction &, data_ptr_t state_p) {
     auto state_ptr = reinterpret_cast<LlmAggState *>(state_p);
@@ -120,9 +120,15 @@ void LlmAggOperation::Initialize(const AggregateFunction &, data_ptr_t state_p) 
 }
 
 void LlmAggOperation::Operation(Vector inputs[], AggregateInputData &aggr_input_data, idx_t input_count, Vector &states,
-                      idx_t count) {
+                                idx_t count) {
     search_query = inputs[0].GetValue(0).ToString();
-    model_name = inputs[1].GetValue(0).ToString();
+
+    if (inputs[1].GetType().id() != LogicalTypeId::STRUCT) {
+        throw std::runtime_error("Expected a struct type for model details");
+    }
+
+    auto model_details_json = CastVectorOfStructsToJson(inputs[1], 1)[0];
+    LlmAggOperation::model_details = ModelManager::CreateModelDetails(CoreModule::GetConnection(), model_details_json);
 
     if (inputs[2].GetType().id() != LogicalTypeId::STRUCT) {
         throw std::runtime_error("Expected a struct type for prompt inputs");
@@ -156,24 +162,13 @@ void LlmAggOperation::Combine(Vector &source, Vector &target, AggregateInputData
 }
 
 void LlmAggOperation::FinalizeResults(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                     idx_t offset, string llm_prompt_template) {
+                                      idx_t offset, string llm_prompt_template) {
     auto states_vector = FlatVector::GetData<LlmAggState *>(states);
 
     for (idx_t i = 0; i < count; i++) {
         auto idx = i + offset;
         auto state_ptr = states_vector[idx];
         auto state = state_map[state_ptr];
-
-        auto query_result = CoreModule::GetConnection().Query(
-            "SELECT model, max_tokens FROM flockmtl_config.FLOCKMTL_MODEL_INTERNAL_TABLE WHERE model_name = '" +
-            model_name + "'");
-
-        if (query_result->RowCount() == 0) {
-            throw std::runtime_error("Model not found");
-        }
-
-        auto model = query_result->GetValue(0, 0).ToString();
-        auto model_context_size = query_result->GetValue(1, 0).GetValue<int>();
 
         auto tuples_with_ids = nlohmann::json::array();
         for (auto i = 0; i < state->value.size(); i++) {
@@ -183,28 +178,31 @@ void LlmAggOperation::FinalizeResults(Vector &states, AggregateInputData &aggr_i
             tuples_with_ids.push_back(tuple_with_id);
         }
 
-        LlmFirstOrLast llm_first_or_last(model, model_context_size, search_query, llm_prompt_template);
+        LlmFirstOrLast llm_first_or_last(LlmAggOperation::model_details.model, Config::default_max_tokens, search_query,
+                                         llm_prompt_template);
         auto response = llm_first_or_last.Evaluate(tuples_with_ids);
         result.SetValue(idx, response.dump());
     }
 }
 
 template <>
-void LlmAggOperation::FirstOrLastFinalize<FirstOrLast::LAST>(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                     idx_t offset) {
+void LlmAggOperation::FirstOrLastFinalize<FirstOrLast::LAST>(Vector &states, AggregateInputData &aggr_input_data,
+                                                             Vector &result, idx_t count, idx_t offset) {
     FinalizeResults(states, aggr_input_data, result, count, offset, GetFirstOrLastPromptTemplate<FirstOrLast::LAST>());
 };
 
 template <>
-void LlmAggOperation::FirstOrLastFinalize<FirstOrLast::FIRST>(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                     idx_t offset) {
+void LlmAggOperation::FirstOrLastFinalize<FirstOrLast::FIRST>(Vector &states, AggregateInputData &aggr_input_data,
+                                                              Vector &result, idx_t count, idx_t offset) {
     FinalizeResults(states, aggr_input_data, result, count, offset, GetFirstOrLastPromptTemplate<FirstOrLast::FIRST>());
 };
 
 void LlmAggOperation::SimpleUpdate(Vector inputs[], AggregateInputData &aggr_input_data, idx_t input_count,
-                         data_ptr_t state_p, idx_t count) {
+                                   data_ptr_t state_p, idx_t count) {
     search_query = inputs[0].GetValue(0).ToString();
-    model_name = inputs[1].GetValue(0).ToString();
+    auto model_details_json = CastVectorOfStructsToJson(inputs[1], 1)[0];
+    LlmAggOperation::model_details = ModelManager::CreateModelDetails(CoreModule::GetConnection(), model_details_json);
+
     auto tuples = CastVectorOfStructsToJson(inputs[2], count);
 
     auto state_map_p = reinterpret_cast<LlmAggState *>(state_p);

@@ -20,6 +20,7 @@ public:
     }
     std::string model_name;
     std::string model;
+    std::string provider_name;
     int max_tokens;
 };
 
@@ -29,6 +30,7 @@ public:
         type = StatementType::DELETE_MODEL;
     }
     std::string model_name;
+    std::string provider_name;
 };
 
 class UpdateModelStatement : public QueryStatement {
@@ -38,6 +40,7 @@ public:
     }
     std::string model_name;
     std::string new_model;
+    std::string provider_name;
     int new_max_tokens;
 };
 
@@ -47,6 +50,7 @@ public:
         type = StatementType::GET_MODEL;
     }
     std::string model_name;
+    std::string provider_name;
 };
 
 class GetAllModelStatement : public QueryStatement {

@@ -10,13 +10,16 @@
 #include <flockmtl/core/model_manager/tiktoken.hpp>
 #include <flockmtl/core/functions/aggregate/llm_agg.hpp>
 #include "templates/llm_rerank_prompt_template.hpp"
+#include <flockmtl/core/config/config.hpp>
 #include <flockmtl/core/functions/aggregate/llm_rerank.hpp>
 
 namespace flockmtl {
 namespace core {
 
-LlmReranker::LlmReranker(std::string& model, int model_context_size, std::string& search_query, std::string& llm_reranking_template)
-: model(model), model_context_size(model_context_size), search_query(search_query), llm_reranking_template(llm_reranking_template) {
+LlmReranker::LlmReranker(std::string &model, int model_context_size, std::string &search_query,
+                         std::string &llm_reranking_template)
+    : model(model), model_context_size(model_context_size), search_query(search_query),
+      llm_reranking_template(llm_reranking_template) {
 
     auto num_tokens_meta_and_search_query = CalculateFixedTokens();
 
@@ -27,7 +30,7 @@ LlmReranker::LlmReranker(std::string& model, int model_context_size, std::string
     available_tokens = model_context_size - num_tokens_meta_and_search_query;
 };
 
-nlohmann::json LlmReranker::SlidingWindowRerank(nlohmann::json& tuples) {
+nlohmann::json LlmReranker::SlidingWindowRerank(nlohmann::json &tuples) {
     int num_tuples = tuples.size();
 
     auto accumulated_rows_tokens = 0u;
@@ -69,7 +72,7 @@ nlohmann::json LlmReranker::SlidingWindowRerank(nlohmann::json& tuples) {
     reranked_tuples.insert(reranked_tuples.end(), window_tuples.begin(), window_tuples.end());
 
     nlohmann::json results;
-    for (auto i = num_tuples - 1; i >= num_tuples/2; i--) {
+    for (auto i = num_tuples - 1; i >= num_tuples / 2; i--) {
         results.push_back(reranked_tuples[i]["content"]);
     }
 
@@ -83,37 +86,26 @@ int LlmReranker::CalculateFixedTokens() const {
     return num_tokens_meta_and_search_query;
 }
 
-nlohmann::json LlmReranker::LlmRerankWithSlidingWindow(const nlohmann::json& tuples) {
+nlohmann::json LlmReranker::LlmRerankWithSlidingWindow(const nlohmann::json &tuples) {
     inja::Environment env;
     nlohmann::json data;
     data["tuples"] = tuples;
     data["search_query"] = search_query;
     auto prompt = env.render(llm_reranking_template, data);
 
-    nlohmann::json settings;
-    auto response = ModelManager::CallComplete(prompt, model, settings);
+    auto response = ModelManager::CallComplete(prompt, LlmAggOperation::model_details);
+
     return response["ranking"];
 };
 
 void LlmAggOperation::RerankerFinalize(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                         idx_t offset) {
+                                       idx_t offset) {
     auto states_vector = FlatVector::GetData<LlmAggState *>(states);
 
     for (idx_t i = 0; i < count; i++) {
         auto idx = i + offset;
         auto state_ptr = states_vector[idx];
         auto state = state_map[state_ptr];
-
-        auto query_result = CoreModule::GetConnection().Query(
-            "SELECT model, max_tokens FROM flockmtl_config.FLOCKMTL_MODEL_INTERNAL_TABLE WHERE model_name = '" +
-            model_name + "'");
-
-        if (query_result->RowCount() == 0) {
-            throw std::runtime_error("Model not found");
-        }
-
-        auto model = query_result->GetValue(0, 0).ToString();
-        auto model_context_size = query_result->GetValue(1, 0).GetValue<int>();
 
         auto llm_rerank_prompt_template_str = std::string(llm_rerank_prompt_template);
 
@@ -125,7 +117,9 @@ void LlmAggOperation::RerankerFinalize(Vector &states, AggregateInputData &aggr_
             tuples_with_ids.push_back(tuple_with_id);
         }
 
-        LlmReranker llm_reranker(model, model_context_size, search_query, llm_rerank_prompt_template_str);
+        LlmReranker llm_reranker(LlmAggOperation::model_details.model, Config::default_max_tokens,
+                                 LlmAggOperation::search_query, llm_rerank_prompt_template_str);
+
         auto reranked_tuples = llm_reranker.SlidingWindowRerank(tuples_with_ids);
 
         result.SetValue(idx, reranked_tuples.dump());
@@ -134,7 +128,7 @@ void LlmAggOperation::RerankerFinalize(Vector &states, AggregateInputData &aggr_
 
 void CoreAggregateFunctions::RegisterLlmRerankFunction(DatabaseInstance &db) {
     auto string_concat = AggregateFunction(
-        "llm_rerank", {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::ANY}, LogicalType::JSON(),
+        "llm_rerank", {LogicalType::VARCHAR, LogicalType::ANY, LogicalType::ANY}, LogicalType::JSON(),
         AggregateFunction::StateSize<LlmAggState>, LlmAggOperation::Initialize, LlmAggOperation::Operation,
         LlmAggOperation::Combine, LlmAggOperation::RerankerFinalize, LlmAggOperation::SimpleUpdate);
 

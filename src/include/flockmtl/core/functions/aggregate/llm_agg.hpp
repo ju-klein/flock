@@ -5,6 +5,7 @@
 #include "flockmtl/common.hpp"
 #include "flockmtl/core/module.hpp"
 #include "templates/llm_first_or_last_prompt_template.hpp"
+#include "flockmtl/core/model_manager/model_manager.hpp"
 
 namespace flockmtl {
 namespace core {
@@ -27,9 +28,9 @@ public:
     int available_tokens;
 
     LlmFirstOrLast(std::string &model, int model_context_size, std::string &search_query,
-                std::string &llm_first_or_last_template);
+                   std::string &llm_first_or_last_template);
 
-    nlohmann::json GetFirstOrLastTupleId(const nlohmann::json &tuples);
+    int GetFirstOrLastTupleId(const nlohmann::json &tuples);
     nlohmann::json Evaluate(nlohmann::json &tuples);
 
 private:
@@ -37,7 +38,7 @@ private:
 };
 
 struct LlmAggOperation {
-    static std::string model_name;
+    static ModelDetails model_details;
     static std::string search_query;
     static std::unordered_map<void *, std::shared_ptr<LlmAggState>> state_map;
 
@@ -53,10 +54,10 @@ struct LlmAggOperation {
 
     template <FirstOrLast option>
     static void FirstOrLastFinalize(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                         idx_t offset);
+                                    idx_t offset);
 
     static void RerankerFinalize(Vector &states, AggregateInputData &aggr_input_data, Vector &result, idx_t count,
-                         idx_t offset);
+                                 idx_t offset);
 
     static void SimpleUpdate(Vector inputs[], AggregateInputData &aggr_input_data, idx_t input_count,
                              data_ptr_t state_p, idx_t count);
