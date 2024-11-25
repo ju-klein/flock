@@ -1,9 +1,8 @@
-#include <flockmtl/core/model_manager/tiktoken.hpp>
 #include <regex>
 
-namespace flockmtl {
+#include "flockmtl/model_manager/tiktoken.hpp"
 
-namespace core {
+namespace flockmtl {
 
 int Tiktoken::GetNumTokens(const std::string &str) {
     std::regex word_regex(R"(\w+|[^\w\s])");
@@ -11,7 +10,5 @@ int Tiktoken::GetNumTokens(const std::string &str) {
     auto words_end = std::sregex_iterator();
     return std::distance(words_begin, words_end);
 }
-
-} // namespace core
 
 } // namespace flockmtl

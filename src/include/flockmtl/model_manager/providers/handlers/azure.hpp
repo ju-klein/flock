@@ -1,5 +1,4 @@
-#ifndef _FLOCK_MTL_MODEL_MANAGER_AZURE_H
-#define _FLOCK_MTL_MODEL_MANAGER_AZURE_H
+#pragma once
 
 #include "session.hpp"
 
@@ -9,7 +8,6 @@
 #include <string>
 
 namespace flockmtl {
-namespace core {
 
 class AzureModelManager {
 public:
@@ -33,8 +31,8 @@ public:
     }
 
     nlohmann::json CallEmbedding(const nlohmann::json &json, const std::string &contentType = "application/json") {
-        string url = "https://" + _resource_name + ".openai.azure.com/openai/deployments/" + _deployment_model_name +
-                     "/embeddings?api-version=" + _api_version;
+        std::string url = "https://" + _resource_name + ".openai.azure.com/openai/deployments/" +
+                          _deployment_model_name + "/embeddings?api-version=" + _api_version;
         _session.setUrl(url);
         return execute_post(json.dump(), contentType);
     }
@@ -149,6 +147,4 @@ private:
     }
 };
 
-} // namespace core
 } // namespace flockmtl
-#endif

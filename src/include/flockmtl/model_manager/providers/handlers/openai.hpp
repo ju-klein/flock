@@ -54,8 +54,7 @@ struct CategoryModel {
     Json list();
     Json retrieve(const std::string &model);
 
-    CategoryModel(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryModel(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -74,8 +73,7 @@ struct CategoryAssistants {
     Json delFile(const std::string &assistants, const std::string &files);
     Json listFile(const std::string &assistants);
 
-    CategoryAssistants(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryAssistants(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -111,8 +109,7 @@ struct CategoryThreads {
     Json retrieveRunStep(const std::string &threads, const std::string &runs, const std::string &steps);
     Json listRunStep(const std::string &threads, const std::string &runs);
 
-    CategoryThreads(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryThreads(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -124,8 +121,7 @@ private:
 struct CategoryCompletion {
     Json create(Json input);
 
-    CategoryCompletion(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryCompletion(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -136,8 +132,7 @@ private:
 struct CategoryChat {
     Json create(Json input);
 
-    CategoryChat(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryChat(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -149,8 +144,7 @@ struct CategoryAudio {
     Json transcribe(Json input);
     Json translate(Json input);
 
-    CategoryAudio(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryAudio(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -162,8 +156,7 @@ private:
 struct CategoryEdit {
     Json create(Json input);
 
-    CategoryEdit(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryEdit(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -176,8 +169,7 @@ struct CategoryImage {
     Json edit(Json input);
     Json variation(Json input);
 
-    CategoryImage(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryImage(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -188,8 +180,7 @@ private:
 // machine learning models and algorithms.
 struct CategoryEmbedding {
     Json create(Json input);
-    CategoryEmbedding(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryEmbedding(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -210,8 +201,7 @@ struct CategoryFile {
     Json retrieve(const std::string &file_id);
     Json content(const std::string &file_id);
 
-    CategoryFile(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryFile(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -228,8 +218,7 @@ struct CategoryFineTune {
     Json events(const std::string &fine_tune_id);
     Json del(const std::string &model);
 
-    CategoryFineTune(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryFineTune(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -241,8 +230,7 @@ private:
 struct CategoryModeration {
     Json create(Json input);
 
-    CategoryModeration(OpenAI &openai) : openai_ {openai} {
-    }
+    CategoryModeration(OpenAI &openai) : openai_ {openai} {}
 
 private:
     OpenAI &openai_;
@@ -299,18 +287,12 @@ public:
         return key;
     }
 
-    void setProxy(const std::string &url) {
-        session_.setProxyUrl(url);
-    }
+    void setProxy(const std::string &url) { session_.setProxyUrl(url); }
 
-    void setBeta(const std::string &beta) {
-        session_.setBeta(beta);
-    }
+    void setBeta(const std::string &beta) { session_.setBeta(beta); }
 
     // void change_token(const std::string& token) { token_ = token; };
-    void setThrowException(bool throw_exception) {
-        throw_exception_ = throw_exception;
-    }
+    void setThrowException(bool throw_exception) { throw_exception_ = throw_exception; }
 
     void setMultiformPart(const std::pair<std::string, std::string> &filefield_and_filepath,
                           const std::map<std::string, std::string> &fields) {
@@ -384,21 +366,13 @@ public:
         return json;
     }
 
-    std::string easyEscape(const std::string &text) {
-        return session_.easyEscape(text);
-    }
+    std::string easyEscape(const std::string &text) { return session_.easyEscape(text); }
 
-    void debug() const {
-        std::cout << token_ << '\n';
-    }
+    void debug() const { std::cout << token_ << '\n'; }
 
-    void setBaseUrl(const std::string &url) {
-        base_url = url;
-    }
+    void setBaseUrl(const std::string &url) { base_url = url; }
 
-    std::string getBaseUrl() const {
-        return base_url;
-    }
+    std::string getBaseUrl() const { return base_url; }
 
 private:
     std::string base_url;
@@ -481,89 +455,53 @@ inline OpenAI &start(const std::string &token = "", const std::string &organizat
     return instance;
 }
 
-inline OpenAI &instance() {
-    return start();
-}
+inline OpenAI &instance() { return start(); }
 
-inline Json post(const std::string &suffix, const Json &json) {
-    return instance().post(suffix, json);
-}
+inline Json post(const std::string &suffix, const Json &json) { return instance().post(suffix, json); }
 
-inline Json get(const std::string &suffix /*, const Json& json*/) {
-    return instance().get(suffix);
-}
+inline Json get(const std::string &suffix /*, const Json& json*/) { return instance().get(suffix); }
 
 // Helper functions to get category structures instance()
 
-inline CategoryModel &model() {
-    return instance().model;
-}
+inline CategoryModel &model() { return instance().model; }
 
-inline CategoryAssistants &assistant() {
-    return instance().assistant;
-}
+inline CategoryAssistants &assistant() { return instance().assistant; }
 
-inline CategoryThreads &thread() {
-    return instance().thread;
-}
+inline CategoryThreads &thread() { return instance().thread; }
 
-inline CategoryCompletion &completion() {
-    return instance().completion;
-}
+inline CategoryCompletion &completion() { return instance().completion; }
 
-inline CategoryChat &chat() {
-    return instance().chat;
-}
+inline CategoryChat &chat() { return instance().chat; }
 
-inline CategoryAudio &audio() {
-    return instance().audio;
-}
+inline CategoryAudio &audio() { return instance().audio; }
 
-inline CategoryEdit &edit() {
-    return instance().edit;
-}
+inline CategoryEdit &edit() { return instance().edit; }
 
-inline CategoryImage &image() {
-    return instance().image;
-}
+inline CategoryImage &image() { return instance().image; }
 
-inline CategoryEmbedding &embedding() {
-    return instance().embedding;
-}
+inline CategoryEmbedding &embedding() { return instance().embedding; }
 
-inline CategoryFile &file() {
-    return instance().file;
-}
+inline CategoryFile &file() { return instance().file; }
 
-inline CategoryFineTune &fineTune() {
-    return instance().fine_tune;
-}
+inline CategoryFineTune &fineTune() { return instance().fine_tune; }
 
-inline CategoryModeration &moderation() {
-    return instance().moderation;
-}
+inline CategoryModeration &moderation() { return instance().moderation; }
 
 // Definitions of category methods
 
 // GET https://api.openai.com/v1/models
 // Lists the currently available models, and provides basic information about
 // each one such as the owner and availability.
-inline Json CategoryModel::list() {
-    return openai_.get("models");
-}
+inline Json CategoryModel::list() { return openai_.get("models"); }
 
 // GET https://api.openai.com/v1/models/{model}
 // Retrieves a model instance, providing basic information about the model such
 // as the owner and permissioning.
-inline Json CategoryModel::retrieve(const std::string &model) {
-    return openai_.get("models/" + model);
-}
+inline Json CategoryModel::retrieve(const std::string &model) { return openai_.get("models/" + model); }
 
 // POST https://api.openai.com/v1/assistants
 // Create an assistant with a model and instructions.
-inline Json CategoryAssistants::create(Json input) {
-    return openai_.post("assistants", input);
-}
+inline Json CategoryAssistants::create(Json input) { return openai_.post("assistants", input); }
 
 // GET https://api.openai.com/v1/assistants/{assistant_id}
 // Retrieves an assistant.
@@ -579,15 +517,11 @@ inline Json CategoryAssistants::modify(const std::string &assistants, Json input
 
 // DELETE https://api.openai.com/v1/assistants/{assistant_id}
 // Delete an assistant.
-inline Json CategoryAssistants::del(const std::string &assistants) {
-    return openai_.del("assistants/" + assistants);
-}
+inline Json CategoryAssistants::del(const std::string &assistants) { return openai_.del("assistants/" + assistants); }
 
 // GET https://api.openai.com/v1/assistants
 // Returns a list of assistants.
-inline Json CategoryAssistants::list() {
-    return openai_.get("assistants");
-}
+inline Json CategoryAssistants::list() { return openai_.get("assistants"); }
 
 // POST https://api.openai.com/v1/assistants/{assistant_id}/files
 // Create an assistant file by attaching a File to an assistant.
@@ -622,9 +556,7 @@ inline Json CategoryThreads::create() {
 
 // GET https://api.openai.com/v1/threads/{thread_id}
 // Retrieves a thread.
-inline Json CategoryThreads::retrieve(const std::string &threads) {
-    return openai_.get("threads/" + threads);
-}
+inline Json CategoryThreads::retrieve(const std::string &threads) { return openai_.get("threads/" + threads); }
 
 // POST https://api.openai.com/v1/threads/{thread_id}
 // Modifies a thread.
@@ -634,9 +566,7 @@ inline Json CategoryThreads::modify(const std::string &threads, Json input) {
 
 // DELETE https://api.openai.com/v1/threads/{thread_id}
 // Delete a thread.
-inline Json CategoryThreads::del(const std::string &threads) {
-    return openai_.del("threads/" + threads);
-}
+inline Json CategoryThreads::del(const std::string &threads) { return openai_.del("threads/" + threads); }
 
 // POST https://api.openai.com/v1/threads/{thread_id}/messages
 // Create a message.
@@ -696,9 +626,7 @@ inline Json CategoryThreads::modifyRun(const std::string &threads, const std::st
 
 // GET https://api.openai.com/v1/threads/{thread_id}/runs
 // Returns a list of runs belonging to a thread.
-inline Json CategoryThreads::listRun(const std::string &threads) {
-    return openai_.get("threads/" + threads + "/runs");
-}
+inline Json CategoryThreads::listRun(const std::string &threads) { return openai_.get("threads/" + threads + "/runs"); }
 
 // POST
 // https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/submit_tool_outputs
@@ -719,9 +647,7 @@ inline Json CategoryThreads::cancelRun(const std::string &threads, const std::st
 
 // POST https://api.openai.com/v1/threads/runs
 // Create a thread and run it in one request.
-inline Json CategoryThreads::createThreadAndRun(Json input) {
-    return openai_.post("threads/runs", input);
-}
+inline Json CategoryThreads::createThreadAndRun(Json input) { return openai_.post("threads/runs", input); }
 
 // GET
 // https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}/steps/{step_id}
@@ -739,15 +665,11 @@ inline Json CategoryThreads::listRunStep(const std::string &threads, const std::
 
 // POST https://api.openai.com/v1/completions
 // Creates a completion for the provided prompt and parameters
-inline Json CategoryCompletion::create(Json input) {
-    return openai_.post("completions", input);
-}
+inline Json CategoryCompletion::create(Json input) { return openai_.post("completions", input); }
 
 // POST https://api.openai.com/v1/chat/completions
 // Creates a chat completion for the provided prompt and parameters
-inline Json CategoryChat::create(Json input) {
-    return openai_.post("chat/completions", input);
-}
+inline Json CategoryChat::create(Json input) { return openai_.post("chat/completions", input); }
 
 // POST https://api.openai.com/v1/audio/transcriptions
 // Transcribes audio into the input language.
@@ -801,15 +723,11 @@ inline Json CategoryAudio::translate(Json input) {
 
 // POST https://api.openai.com/v1/translations
 // Creates a new edit for the provided input, instruction, and parameters
-inline Json CategoryEdit::create(Json input) {
-    return openai_.post("edits", input);
-}
+inline Json CategoryEdit::create(Json input) { return openai_.post("edits", input); }
 
 // POST https://api.openai.com/v1/images/generations
 // Given a prompt and/or an input image, the model will generate a new image.
-inline Json CategoryImage::create(Json input) {
-    return openai_.post("images/generations", input);
-}
+inline Json CategoryImage::create(Json input) { return openai_.post("images/generations", input); }
 
 // POST https://api.openai.com/v1/images/edits
 // Creates an edited or extended image given an original image and a prompt.
@@ -877,13 +795,9 @@ inline Json CategoryImage::variation(Json input) {
     return openai_.post("images/variations", std::string {""}, "multipart/form-data");
 }
 
-inline Json CategoryEmbedding::create(Json input) {
-    return openai_.post("embeddings", input);
-}
+inline Json CategoryEmbedding::create(Json input) { return openai_.post("embeddings", input); }
 
-inline Json CategoryFile::list() {
-    return openai_.get("files");
-}
+inline Json CategoryFile::list() { return openai_.get("files"); }
 
 inline Json CategoryFile::upload(Json input) {
     openai_.setMultiformPart({"file", input["file"].get<std::string>()},
@@ -892,25 +806,15 @@ inline Json CategoryFile::upload(Json input) {
     return openai_.post("files", std::string {""}, "multipart/form-data");
 }
 
-inline Json CategoryFile::del(const std::string &file_id) {
-    return openai_.del("files/" + file_id);
-}
+inline Json CategoryFile::del(const std::string &file_id) { return openai_.del("files/" + file_id); }
 
-inline Json CategoryFile::retrieve(const std::string &file_id) {
-    return openai_.get("files/" + file_id);
-}
+inline Json CategoryFile::retrieve(const std::string &file_id) { return openai_.get("files/" + file_id); }
 
-inline Json CategoryFile::content(const std::string &file_id) {
-    return openai_.get("files/" + file_id + "/content");
-}
+inline Json CategoryFile::content(const std::string &file_id) { return openai_.get("files/" + file_id + "/content"); }
 
-inline Json CategoryFineTune::create(Json input) {
-    return openai_.post("fine-tunes", input);
-}
+inline Json CategoryFineTune::create(Json input) { return openai_.post("fine-tunes", input); }
 
-inline Json CategoryFineTune::list() {
-    return openai_.get("fine-tunes");
-}
+inline Json CategoryFineTune::list() { return openai_.get("fine-tunes"); }
 
 inline Json CategoryFineTune::retrieve(const std::string &fine_tune_id) {
     return openai_.get("fine-tunes/" + fine_tune_id);
@@ -928,13 +832,9 @@ inline Json CategoryFineTune::events(const std::string &fine_tune_id) {
     return openai_.get("fine-tunes/" + fine_tune_id + "/events");
 }
 
-inline Json CategoryFineTune::del(const std::string &model) {
-    return openai_.del("models/" + model);
-}
+inline Json CategoryFineTune::del(const std::string &model) { return openai_.del("models/" + model); }
 
-inline Json CategoryModeration::create(Json input) {
-    return openai_.post("moderations", input);
-}
+inline Json CategoryModeration::create(Json input) { return openai_.post("moderations", input); }
 
 } // namespace _detail
 

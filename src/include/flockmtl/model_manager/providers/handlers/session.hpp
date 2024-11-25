@@ -1,13 +1,11 @@
-#ifndef _FLOCK_MANAGER_SESSION_H
-#define _FLOCK_MANAGER_SESSION_H
+#pragma once
 
-#ifndef CURL_STATICLIB
 #include <curl/curl.h>
-#else
-#include "curl/curl.h"
-#endif
 #include <mutex>
 #include <string>
+#include <stdexcept>
+#include <iostream>
+#include <map>
 
 struct Response {
     std::string text;
@@ -48,13 +46,9 @@ public:
         curl_easy_setopt(curl_, CURLOPT_NOSIGNAL, 1);
     }
 
-    void ignoreSSL() {
-        curl_easy_setopt(curl_, CURLOPT_SSL_VERIFYPEER, 0L);
-    }
+    void ignoreSSL() { curl_easy_setopt(curl_, CURLOPT_SSL_VERIFYPEER, 0L); }
 
-    void setUrl(const std::string &url) {
-        url_ = url;
-    }
+    void setUrl(const std::string &url) { url_ = url; }
 
     void setToken(const std::string &token, const std::string &organization) {
         token_ = token;
@@ -65,9 +59,7 @@ public:
         curl_easy_setopt(curl_, CURLOPT_PROXY, proxy_url_.c_str());
     }
 
-    void setBeta(const std::string &beta) {
-        beta_ = beta;
-    }
+    void setBeta(const std::string &beta) { beta_ = beta; }
 
     void setBody(const std::string &data);
     void setMultiformPart(const std::pair<std::string, std::string> &filefield_and_filepath,
@@ -173,9 +165,7 @@ inline Response Session::getPrepare() {
     return makeRequest();
 }
 
-inline Response Session::postPrepare(const std::string &contentType) {
-    return makeRequest(contentType);
-}
+inline Response Session::postPrepare(const std::string &contentType) { return makeRequest(contentType); }
 
 inline Response Session::postPrepareOllama(const std::string &contentType) {
     std::lock_guard<std::mutex> lock(mutex_request_);
@@ -286,5 +276,3 @@ inline std::string Session::easyEscape(const std::string &text) {
     curl_free(encoded_output);
     return str;
 }
-
-#endif

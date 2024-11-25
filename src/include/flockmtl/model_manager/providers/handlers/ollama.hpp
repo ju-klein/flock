@@ -9,12 +9,10 @@
 #include <string>
 
 namespace flockmtl {
-namespace core {
 
 class OllamaModelManager {
 public:
-    OllamaModelManager(bool throw_exception) : _session("Ollama", throw_exception), _throw_exception(throw_exception) {
-    }
+    OllamaModelManager(bool throw_exception) : _session("Ollama", throw_exception), _throw_exception(throw_exception) {}
     OllamaModelManager(const OllamaModelManager &) = delete;
     OllamaModelManager &operator=(const OllamaModelManager &) = delete;
     OllamaModelManager(OllamaModelManager &&) = delete;
@@ -150,6 +148,5 @@ private:
     }
 };
 
-} // namespace core
 } // namespace flockmtl
 #endif
