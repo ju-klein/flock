@@ -12,7 +12,7 @@ struct ModelDetails {
     int32_t context_window;
     int32_t max_output_tokens;
     float temperature;
-    std::string secret;
+    std::unordered_map<std::string, std::string> secret;
 };
 
 const std::string OLLAMA = "ollama";

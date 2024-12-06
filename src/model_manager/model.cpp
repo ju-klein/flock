@@ -1,4 +1,5 @@
 #include "flockmtl/model_manager/model.hpp"
+#include "flockmtl/secret_manager/secret_manager.hpp"
 
 namespace flockmtl {
 
@@ -20,28 +21,17 @@ void Model::LoadModelDetails(const nlohmann::json& model_json) {
         model_json.contains("model") ? model_json.at("model").get<std::string>() : std::get<0>(query_result);
     model_details_.provider_name =
         model_json.contains("provider") ? model_json.at("provider").get<std::string>() : std::get<1>(query_result);
-    model_details_.secret = LoadSecret(model_details_.provider_name);
+    auto secret_name = "__default_" + model_details_.provider_name;
+    if (model_json.contains("secret_name")) {
+        secret_name = model_json["secret_name"].get<std::string>();
+    }
+    model_details_.secret = SecretManager::GetSecret(secret_name);
     model_details_.context_window =
         model_json.contains("context_window") ? model_json.at("context_window").get<int>() : std::get<2>(query_result);
     model_details_.max_output_tokens = model_json.contains("max_output_tokens")
                                            ? model_json.at("max_output_tokens").get<int>()
                                            : std::get<3>(query_result);
     model_details_.temperature = model_json.contains("temperature") ? model_json.at("temperature").get<float>() : 0.5;
-}
-
-std::string Model::LoadSecret(const std::string& provider_name) {
-    auto query = duckdb_fmt::format(" SELECT secret "
-                                    "   FROM flockmtl_config.FLOCKMTL_SECRET_INTERNAL_TABLE "
-                                    "  WHERE provider = '{}' ",
-                                    provider_name);
-
-    auto query_result = Config::GetConnection().Query(query);
-
-    if (query_result->RowCount() == 0) {
-        return "";
-    }
-
-    return query_result->GetValue(0, 0).ToString();
 }
 
 std::tuple<std::string, std::string, int32_t, int32_t> Model::GetQueriedModel(const std::string& model_name) {
