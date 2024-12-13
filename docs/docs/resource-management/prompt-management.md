@@ -7,7 +7,7 @@ sidebar_position: 2
 
 The **Prompt Management** section provides guidance on how to manage and configure prompts for **analytics and semantic analysis tasks** within FlockMTL. Prompts guide models in generating specific outputs for tasks like content generation, summarization, and ranking. Each database is configured with its own prompt management table during the initial load.
 
-### Prompt Table Structure
+### 1. Prompt Table Structure
 
 | **Column Name** | **Description**                   |
 | --------------- | --------------------------------- |
@@ -75,3 +75,33 @@ SELECT llm_complete(
 ) AS review_summary
 FROM reviews;
 ```
+
+## 4. Global and Local Prompts
+
+Prompt creation is database specific if you want it to be available irrespective of the database then make it a GLOBAL mode. Note that previously, the creation was specific to the running database, which is LOCAL by default and the keyword LOCAL is optional.
+
+### Create Prompts
+
+*   Create a global prompt:
+
+```sql
+CREATE GLOBAL PROMPT('prompt_name', 'prompt');
+```
+
+- Create a local prompt (default if no type is specified):
+
+```sql
+CREATE LOCAL PROMPT('prompt_name', 'prompt');
+CREATE PROMPT('prompt_name', 'prompt');
+```
+
+### Toggle Prompt State
+
+- Toggle a prompt's state between global and local:
+
+```sql
+UPDATE PROMPT 'prompt_name' TO GLOBAL;
+UPDATE PROMPT 'prompt_name' TO LOCAL;
+```
+
+All the other queries remain the same for both global and local prompts.

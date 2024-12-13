@@ -73,3 +73,33 @@ SELECT llm_complete(
 ) AS search_results
 FROM search_data;
 ```
+
+## 4. Global and Local Models
+
+Model creation is database specific if you want it to be available irrespective of the database then make it a GLOBAL mode. Note that previously, the creation was specific to the running database, which is LOCAL by default and the keyword LOCAL is optional.
+
+### Create Models
+
+- Create a global model:
+
+```sql
+CREATE GLOBAL MODEL('model_name', 'model_type', 'provider', {'context_window': 128000, 'max_output_tokens': 8000})
+```
+
+- Create a local model (default if no type is specified):
+
+```sql
+CREATE LOCAL MODEL('model_name', 'model_type', 'provider', {'context_window': 128000, 'max_output_tokens': 8000})
+CREATE MODEL('model_name', 'model_type', 'provider', {'context_window': 128000, 'max_output_tokens': 8000})
+```
+
+### Toggle Model State
+
+- Toggle a model's state between global and local:
+
+```sql
+UPDATE MODEL 'model_name' TO GLOBAL;
+UPDATE MODEL 'model_name' TO LOCAL;
+```
+
+All the other queries remain the same for both global and local prompts.
