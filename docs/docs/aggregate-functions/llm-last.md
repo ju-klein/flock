@@ -1,15 +1,11 @@
 ---
-title: llm_first
-sidebar_position: 4
+title: llm_last
+sidebar_position: 5
 ---
 
-# llm_first Aggregate Function
+# llm_last Function
 
-The `llm_first` function is used to extract the first matching result that satisfies a condition defined by a model's prompt and column data. It operates across rows, typically combined with a `GROUP BY` clause, to return the first relevant row for each group.
-
-# Table of Contents
-
-Below is a quick overview to help you navigate with ease through the documentation. You can click on any of the links to jump to the relevant section.
+The `llm_last` function is used to extract the least relevant result from a set of rows based on a model's prompt and input columns. It operates over a set of rows, generally combined with a `GROUP BY` clause, to return the least relevant row for each group.
 
 import TOCInline from '@theme/TOCInline';
 
@@ -19,56 +15,56 @@ import TOCInline from '@theme/TOCInline';
 
 ### 1.1. **Example without `GROUP BY`**
 
-Retrieve the first relevant product feature across all rows:
+Retrieve the least relevant product feature across all rows:
 
 ```sql
-SELECT llm_first(
+SELECT llm_last(
     {'model_name': 'gpt-4'},
-    {'prompt': 'What is the most relevant detail for these products, based on their names and descriptions?'},
+    {'prompt': 'What is the least relevant detail for these products, based on their names and descriptions?'},
     {'product_name': product_name, 'product_description': product_description}
-) AS first_product_feature
+) AS last_product_feature
 FROM products;
 ```
 
-**Description**: This query returns the first relevant feature from all product descriptions and product names, based on the provided prompt.
+This query will return the least relevant feature from all product descriptions and product names.
 
 ### 1.2. **Example with `GROUP BY`**
 
-Retrieve the first relevant product feature for each product category:
+Retrieve the least relevant product feature for each product category:
 
 ```sql
 SELECT category,
-       llm_first(
+       llm_last(
            {'model_name': 'gpt-4'},
-           {'prompt': 'What is the most relevant detail for these products, based on their names and descriptions?'},
+           {'prompt': 'What is the least relevant detail for these products, based on their names and descriptions?'},
            {'product_name': product_name, 'product_description': product_description}
-       ) AS first_product_feature
+       ) AS last_product_feature
 FROM products
 GROUP BY category;
 ```
 
-**Description**: The query groups the products by category and returns the first relevant feature for each group.
+In this case, the query groups products by category and returns the least relevant feature for each category.
 
 ### 1.3. **Using a Named Prompt with `GROUP BY`**
 
-Use a reusable prompt, such as "first-relevant-detail", to extract the first relevant feature for each product category:
+Use a reusable prompt such as "least-relevant-detail" to extract the least relevant feature for each product category:
 
 ```sql
 SELECT category,
-       llm_first(
-           {'model_name': 'gpt-4', 'secret_name': 'product_key'},
-           {'prompt_name': 'first-relevant-detail', 'version': 1},
+       llm_last(
+           {'model_name': 'gpt-4', 'secret_name': 'my_key'},
+           {'prompt_name': 'least-relevant-detail', 'version': 1},
            {'product_name': product_name, 'product_description': product_description}
-       ) AS first_product_feature
+       ) AS last_product_feature
 FROM products
 GROUP BY category;
 ```
 
-**Description**: This example leverages a named prompt (`first-relevant-detail`) to extract the first relevant feature for each product category. The query groups the results by category.
+If the `version` parameter is omitted, the system will use the latest version of the `least-relevant-detail` prompt by default.
 
 ### 1.4. **Advanced Example with Multiple Columns and `GROUP BY`**
 
-Retrieve the first relevant feature for products grouped by category, using both the product name and description:
+Retrieve the least relevant feature for products grouped by category, using both the product name and description:
 
 ```sql
 WITH product_info AS (
@@ -77,16 +73,16 @@ WITH product_info AS (
     WHERE category = 'Electronics'
 )
 SELECT category,
-       llm_first(
+       llm_last(
            {'model_name': 'gpt-4'},
-           {'prompt': 'What is the most relevant detail for these products, based on their names and descriptions?'},
+           {'prompt': 'What is the least relevant detail for these products, based on their names and descriptions?'},
            {'product_name': product_name, 'product_description': product_description}
-       ) AS first_product_feature
+       ) AS last_product_feature
 FROM product_info
 GROUP BY category;
 ```
 
-**Description**: This query extracts the first relevant feature from both the `product_name` and `product_description` columns, grouped by product category (in this case, electronics).
+This example will extract the least relevant feature from both the product name and description for each product category.
 
 ## 2. **Input Parameters**
 
@@ -119,7 +115,7 @@ Two types of prompts can be used:
    - Directly provides the prompt in the query.
    - **Example**:
      ```sql
-     {'prompt': 'What is the most relevant detail for these products, based on their names and descriptions?'}
+     {'prompt': 'What is the least relevant detail for these products, based on their names and descriptions?'}
      ```
 
 2. **Named Prompt**
@@ -127,14 +123,14 @@ Two types of prompts can be used:
    - Refers to a pre-configured prompt by name.
    - **Example**:
      ```sql
-     {'prompt_name': 'first-relevant-detail'}
+     {'prompt_name': 'least-relevant-detail'}
      ```
 
 3. **Named Prompt with Version**
    - Refers to a specific version of a pre-configured prompt.
    - **Example**:
      ```sql
-     {'prompt_name': 'first-relevant-detail', 'version': 1}
+     {'prompt_name': 'least-relevant-detail', 'version': 1}
      ```
 
 ### 2.3. **Column Mappings (Optional)**
@@ -152,7 +148,7 @@ Two types of prompts can be used:
 - **Behavior**: The function returns a JSON object containing the values of the columns you provided in the input. The structure of the returned JSON will mirror the input columns' values.
 
 **Output Example**:  
-For a query that extracts the first relevant feature, the result could look like:
+For a query that extracts the least relevant feature, the result could look like:
 
 - **Input Rows**:
 
@@ -167,4 +163,4 @@ For a query that extracts the first relevant feature, the result could look like
   }
   ```
 
-The output contains the values for `product_name` and `product_description` from the first relevant row based on the prompt.
+The output contains the values for `product_name` and `product_description` from the least relevant row based on the prompt.

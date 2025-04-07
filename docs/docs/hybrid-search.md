@@ -1,15 +1,11 @@
 ---
-title: Fusion Functions
-sidebar_position: 5
+title: Hybrid Search
+sidebar_position: 6
 ---
 
-# Fusion Functions
+# Hybrid Search using FlockMTL
 ## Overview
-The fusion functions combine two or more numerical values (e.g., BM25 and embedding scores) into a single, unified relevance score. These functions are ideal for hybrid search cases where scores from multiple scoring systems are combined to produce the best-fit result. Rank-based functions calculate a combined score based on each document's position when compared to other documents from best to worst (ranking). Score-based functions calculate a combined score based on each document's scores. Please note that all input scores must already be normalized. 
-
-# Table of Contents
-
-Below is a quick overview to help you navigate with ease through the documentation. You can click on any of the links to jump to the relevant section.
+FlockMTL provides a set of fusion functions that allow you to combine multiple scoring systems into a single, unified relevance score. This is particularly useful in hybrid search scenarios where you want to leverage the strengths of different scoring methods (e.g., BM25 and embedding scores) to produce the best-fit result. To achieve that, FlockMTL offers two types of fusion functions: rank-based and score-based.
 
 import TOCInline from '@theme/TOCInline';
 
@@ -144,26 +140,12 @@ ORDER BY combined_score DESC;
 
 ## 3. Input Parameters
 
-Both the score-based functions and the rank-based function take one or more inputs. The examples demonstrate the case where we have two scoring systems (two inputs), but the algorithms allow for as many inputs as you like.
+The fusion functions (score-based and rank-based) accept **two or more numerical inputs**. While examples below show two inputs for simplicity, the functions are designed to handle any number of inputs.
 
-### 3.1 First Numerical Input
+### 3.1 Numerical Inputs
 
-- **Parameter**: First numeric value (e.g., normalized BM25 score)
-- **Description**: The first value used in the fusion algorithm.
-- **Example**: `0.4`
+- **Parameter**: One or more numeric values (e.g., normalized scores from different systems)
+- **Description**: Each input represents a score from a distinct retrieval method (e.g., BM25, embedding models, etc.). These values are combined by the fusion algorithm.
+- **Example**: `0.4, 0.9, 0.7`
 
-
-### 3.2 Second Numerical Input
-
-- **Parameter**: Second numeric value (e.g., normalized embedding score)
-- **Description**: The second value used in the fusion algorithm.
-- **Example**: `0.9`
-
-### 3.3 Third Numerical Input
-
-- **Parameter**: Third numeric value (e.g., some other scoring system)
-- **Description**: The third value used in the fusion algorithm.
-- **Example**: `0.6`
-
-### 3.4 More numerical Inputs
-You may pass as many numerical inputs as you like.
+> 💡 You can pass any number of numerical inputs—two or more—depending on how many scoring systems you’re combining.

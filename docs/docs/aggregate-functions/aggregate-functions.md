@@ -2,10 +2,6 @@
 
 Aggregate functions in FlockMTL perform operations on groups of rows, returning a single result for each group. They're particularly useful for summarizing, ranking, and reordering data, often used with the `GROUP BY` clause in SQL queries. Leveraging language models, these functions enable advanced tasks like summarization, ranking, and relevance-based filtering, enhancing data analysis and NLP capabilities.
 
-# Table of Contents
-
-Below is a quick overview to help you navigate with ease through the documentation. You can click on any of the links to jump to the relevant section.
-
 import TOCInline from '@theme/TOCInline';
 
 <TOCInline toc={toc} />
@@ -14,22 +10,22 @@ import TOCInline from '@theme/TOCInline';
 
 FlockMTL offers several powerful aggregate functions:
 
-1. [**`llm_reduce`**](/docs/semantic-functions/aggregate-functions/llm-reduce): Aggregates a group of rows using a language model, typically for summarization or text consolidation.
+1. [**`llm_reduce`**](/docs/aggregate-functions/llm-reduce): Aggregates a group of rows using a language model, typically for summarization or text consolidation.
 
    - **Example Use Cases**: Summarizing documents, aggregating product descriptions.
 
-2. [**`llm_reduce_json`**](/docs/semantic-functions/aggregate-functions/llm-reduce): Aggregates multiple rows into a single JSON output using a language model, ideal for tasks like summarization or consolidating text across multiple features.
+2. [**`llm_reduce_json`**](/docs/aggregate-functions/llm-reduce): Aggregates multiple rows into a single JSON output using a language model, ideal for tasks like summarization or consolidating text across multiple features.
 
    - **Example Use Cases**: Extracting key insights and sentiment from reviews, generating a summary with multiple attributes like themes and tone from survey responses.
 
-3. [**`llm_rerank`**](/docs/semantic-functions/aggregate-functions/llm-rerank): Reorders a list of rows based on relevance to a prompt using a sliding window mechanism.
+3. [**`llm_rerank`**](/docs/aggregate-functions/llm-rerank): Reorders a list of rows based on relevance to a prompt using a sliding window mechanism.
    - **Example Use Cases**: Reranking search results, adjusting document or product rankings.
 
-4. [**`llm_first`**](/docs/semantic-functions/aggregate-functions/llm-first): Returns the most relevant item from a group based on a prompt.
+4. [**`llm_first`**](/docs/aggregate-functions/llm-first): Returns the most relevant item from a group based on a prompt.
 
    - **Example Use Cases**: Selecting the top-ranked document, finding the most relevant product.
 
-5. [**`llm_last`**](/docs/semantic-functions/aggregate-functions/llm-last): Returns the least relevant item from a group based on a prompt.
+5. [**`llm_last`**](/docs/aggregate-functions/llm-last): Returns the least relevant item from a group based on a prompt.
 
    - **Example Use Cases**: Finding the least relevant document, selecting the least important product.
 

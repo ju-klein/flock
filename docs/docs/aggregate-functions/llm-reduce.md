@@ -1,15 +1,11 @@
 ---
-title: llm_reduce_json
-sidebar_position: 2
+title: llm_reduce
+sidebar_position: 1
 ---
 
-# llm_reduce_json Aggregate Function
+# llm_reduce Aggregate Function
 
-The `llm_reduce_json` function in FlockMTL consolidates multiple rows of text-based results into a single JSON output. It is used in SQL queries with the `GROUP BY` clause to combine multiple values into a summary or reduced form.
-
-# Table of Contents
-
-Below is a quick overview to help you navigate with ease through the documentation. You can click on any of the links to jump to the relevant section.
+The `llm_reduce` function in FlockMTL consolidates multiple rows of text-based results into a single output. It is used in SQL queries with the `GROUP BY` clause to combine multiple values into a summary or reduced form.
 
 import TOCInline from '@theme/TOCInline';
 
@@ -22,7 +18,7 @@ import TOCInline from '@theme/TOCInline';
 Summarize all product descriptions into one single result:
 
 ```sql
-SELECT llm_reduce_json(
+SELECT llm_reduce(
     {'model_name': 'gpt-4'},
     {'prompt': 'Summarize the following product descriptions'},
     {'product_description': product_description}
@@ -30,7 +26,7 @@ SELECT llm_reduce_json(
 FROM products;
 ```
 
-**Description**: This example aggregates all product descriptions into one summary. The `llm_reduce_json` function processes the `product_description` column for each row, consolidating the values into a single summarized output.
+**Description**: This example aggregates all product descriptions into one summary. The `llm_reduce` function processes the `product_description` column for each row, consolidating the values into a single summarized output.
 
 ### 1.2. **Example with `GROUP BY`**
 
@@ -38,7 +34,7 @@ Group the products by category and summarize their descriptions into one for eac
 
 ```sql
 SELECT category,
-       llm_reduce_json(
+       llm_reduce(
            {'model_name': 'gpt-4'},
            {'prompt': 'Summarize the following product descriptions'},
            {'product_description': product_description}
@@ -55,7 +51,7 @@ Leverage a reusable named prompt for summarization, grouped by category:
 
 ```sql
 SELECT category,
-       llm_reduce_json(
+       llm_reduce(
            {'model_name': 'gpt-4', 'secret_name': 'azure_key'},
            {'prompt_name': 'summarizer', 'version': 1},
            {'product_description': product_description}
@@ -77,7 +73,7 @@ WITH product_info AS (
     WHERE category = 'Electronics'
 )
 SELECT category,
-       llm_reduce_json(
+       llm_reduce(
            {'model_name': 'gpt-4'},
            {'prompt': 'Summarize the following product details'},
            {'product_name': product_name, 'product_description': product_description}
