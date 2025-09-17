@@ -3,8 +3,8 @@
 
 namespace flockmtl {
 
-void AggregateRegistry::RegisterLlmFirst(duckdb::DatabaseInstance& db) {
-    duckdb::ExtensionUtil::RegisterFunction(db, duckdb::AggregateFunction(
+void AggregateRegistry::RegisterLlmFirst(duckdb::ExtensionLoader& loader) {
+    loader.RegisterFunction(duckdb::AggregateFunction(
                                                         "llm_first", {duckdb::LogicalType::ANY, duckdb::LogicalType::ANY},
                                                         duckdb::LogicalType::JSON(), duckdb::AggregateFunction::StateSize<AggregateFunctionState>,
                                                         LlmFirstOrLast::Initialize, LlmFirstOrLast::Operation, LlmFirstOrLast::Combine,
@@ -12,8 +12,8 @@ void AggregateRegistry::RegisterLlmFirst(duckdb::DatabaseInstance& db) {
                                                         nullptr, LlmFirstOrLast::Destroy));
 }
 
-void AggregateRegistry::RegisterLlmLast(duckdb::DatabaseInstance& db) {
-    duckdb::ExtensionUtil::RegisterFunction(db, duckdb::AggregateFunction(
+void AggregateRegistry::RegisterLlmLast(duckdb::ExtensionLoader& loader) {
+    loader.RegisterFunction(duckdb::AggregateFunction(
                                                         "llm_last", {duckdb::LogicalType::ANY, duckdb::LogicalType::ANY},
                                                         duckdb::LogicalType::JSON(), duckdb::AggregateFunction::StateSize<AggregateFunctionState>,
                                                         LlmFirstOrLast::Initialize, LlmFirstOrLast::Operation, LlmFirstOrLast::Combine,

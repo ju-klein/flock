@@ -6,7 +6,7 @@ namespace duckdb {
 
 class FlockmtlExtension : public Extension {
 public:
-    void Load(DuckDB& db) override;
+    void Load(ExtensionLoader &loader) override;    /* this code snippet taken from https://github.com/duckdb/duckdb/pull/17772#issue-3113786872, 17-09-2025-1-55-pm. */
     std::string Name() override;
     std::string Version() const override;
 };

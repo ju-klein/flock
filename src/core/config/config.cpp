@@ -1,4 +1,5 @@
 #include "flockmtl/core/config.hpp"
+//#include "../../../duckdb/src/include/duckdb/main/extension/extension_loader.hpp" Commented out because of redefinition of ExtensionLoader class error. TODO: Check why that happens!
 #include "filesystem.hpp"
 #include "flockmtl/secret_manager/secret_manager.hpp"
 #include <fmt/format.h>
@@ -78,9 +79,10 @@ void Config::ConfigureTables(duckdb::Connection& con, const ConfigType type) {
     con.Commit();
 }
 
-void Config::Configure(duckdb::DatabaseInstance& db) {
-    Registry::Register(db);
-    SecretManager::Register(db);
+void Config::Configure(duckdb::ExtensionLoader& loader) {
+    duckdb::DatabaseInstance& db = loader.GetDatabaseInstance();
+    Registry::Register(loader);
+    SecretManager::Register(loader);
     if (const auto db_path = db.config.options.database_path; db_path != get_global_storage_path().string()) {
         SetupGlobalStorageLocation();
         ConfigureGlobal();

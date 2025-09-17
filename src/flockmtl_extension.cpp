@@ -12,8 +12,9 @@
 
 namespace duckdb {
 
-static void LoadInternal(DatabaseInstance& instance) {
-    flockmtl::Config::Configure(instance);
+static void LoadInternal(ExtensionLoader& loader) { /* this code snippet taken from https://github.com/duckdb/duckdb/pull/17772#issue-3113786872, 17-09-2025-1-55-pm. */
+    DatabaseInstance& instance = loader.GetDatabaseInstance();
+    flockmtl::Config::Configure(loader);
 
     // Register the custom parser
     auto& config = DBConfig::GetConfig(instance);
@@ -67,7 +68,7 @@ BoundStatement duck_bind(ClientContext& context, Binder& binder, OperatorExtensi
     }
 }
 
-void FlockmtlExtension::Load(DuckDB& db) { LoadInternal(*db.instance); }
+void FlockmtlExtension::Load(ExtensionLoader &loader) { LoadInternal(loader); } /* this code snippet taken from https://github.com/duckdb/duckdb/pull/17772#issue-3113786872, 17-09-2025-1-55-pm. */
 
 std::string FlockmtlExtension::Name() { return "flockmtl"; }
 std::string FlockmtlExtension::Version() const {
@@ -80,14 +81,8 @@ std::string FlockmtlExtension::Version() const {
 
 } // namespace duckdb
 
-extern "C" {
-
-DUCKDB_EXTENSION_API void flockmtl_init(duckdb::DatabaseInstance& db) {
-    duckdb::DuckDB db_wrapper(db);
-    db_wrapper.LoadExtension<duckdb::FlockmtlExtension>();
-}
-
-DUCKDB_EXTENSION_API const char* flockmtl_version() { return duckdb::DuckDB::LibraryVersion(); }
+DUCKDB_CPP_EXTENSION_ENTRY(flockmtl, loader) {  /* this code snippet taken from https://github.com/duckdb/duckdb/pull/17772#issue-3113786872, 17-09-2025-1-55-pm. naming this "loader" taken from core_functions_extension.cpp */
+    duckdb::LoadInternal(loader);
 }
 
 #ifndef DUCKDB_EXTENSION_MAIN

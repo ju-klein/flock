@@ -1,11 +1,13 @@
 #include "flockmtl/registry/registry.hpp"
+
+//#include "../../../../duckdb/src/include/duckdb/main/extension/extension_loader.hpp"  TODO: Check how to repair this!
 #include "flockmtl/functions/scalar/llm_filter.hpp"
 
 namespace flockmtl {
 
-void ScalarRegistry::RegisterLlmFilter(duckdb::DatabaseInstance& db) {
-    duckdb::ExtensionUtil::RegisterFunction(
-            db, duckdb::ScalarFunction("llm_filter",
+void ScalarRegistry::RegisterLlmFilter(duckdb::ExtensionLoader& loader) {
+    loader.RegisterFunction(
+            duckdb::ScalarFunction("llm_filter",
                                        {duckdb::LogicalType::ANY, duckdb::LogicalType::ANY},
                                        duckdb::LogicalType::VARCHAR, LlmFilter::Execute));
 }
